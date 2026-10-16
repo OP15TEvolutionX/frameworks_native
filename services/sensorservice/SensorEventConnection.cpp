@@ -717,6 +717,22 @@ status_t SensorService::SensorEventConnection::enableDisable(
 
     status_t err;
     if (enabled) {
+        // SensorBlock: for a blocked package, report success but never subscribe, so the
+        // app sees a working sensor that sends no events.
+        std::shared_ptr<SensorInterface> sensorInterface =
+                mService->getSensorInterfaceFromHandle(handle);
+        if (sensorInterface != nullptr) {
+            const Sensor& sensor = sensorInterface->getSensor();
+            if (SensorService::isSensorInBlockedSet(sensor.getType())) {
+                if (mService->isPackageSensorBlocked(mOpPackageName)) {
+                    ALOGI("SensorBlock: Blocking sensor %d (%s) for package %s",
+                          sensor.getType(), sensor.getName().c_str(),
+                          String8(mOpPackageName).c_str());
+                    return NO_ERROR;
+                }
+            }
+        }
+
         nsecs_t requestedSamplingPeriodNs = samplingPeriodNs;
         bool isSensorCapped = false;
         std::shared_ptr<SensorInterface> si = mService->getSensorInterfaceFromHandle(handle);

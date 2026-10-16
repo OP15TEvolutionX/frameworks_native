@@ -42,6 +42,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <queue>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -212,6 +213,14 @@ public:
 
     // Returns true if a sensor should be throttled according to our rate-throttling rules.
     static bool isSensorInCappedSet(int sensorType);
+
+    // SensorBlock: motion and orientation sensors that blocked packages get no data from.
+    static bool isSensorInBlockedSet(int sensorType);
+    // SensorBlock: true if the package is in the list set by setBlockedSensorPackages().
+    bool isPackageSensorBlocked(const String16& opPackageName);
+    // SensorBlock: replaces the blocked package list; called by system_server on changes
+    // of Settings.Secure.SENSOR_BLOCKED_PACKAGES.
+    void setBlockedSensorPackages(const std::vector<String16>& packages) ANDROID_API;
 
     virtual status_t shellCommand(int in, int out, int err, Vector<String16>& args);
 
@@ -709,6 +718,10 @@ private:
     // Stores the handle of the dynamic_meta sensor to send clean up event once
     // HAL crashes.
     std::optional<int> mDynamicMetaSensorHandle;
+
+    // SensorBlock: packages that get no data from the sensors in isSensorInBlockedSet().
+    mutable Mutex mBlockedPackagesLock;
+    std::set<String16> mBlockedPackages GUARDED_BY(mBlockedPackagesLock);
 };
 
 } // namespace android
