@@ -43,7 +43,7 @@
 #include <mutex>
 #include <queue>
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 #include <vector>
 
 #include "RecentEventLogger.h"
@@ -717,7 +717,7 @@ private:
 
     // SensorBlock: Set of blocked packages and mutex
     mutable Mutex mBlockedPackagesLock;
-    std::unordered_set<String16> mBlockedPackages GUARDED_BY(mBlockedPackagesLock);
+    std::set<String16> mBlockedPackages GUARDED_BY(mBlockedPackagesLock);
 };
 
 } // namespace android
