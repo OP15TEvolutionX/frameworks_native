@@ -213,6 +213,11 @@ public:
     // Returns true if a sensor should be throttled according to our rate-throttling rules.
     static bool isSensorInCappedSet(int sensorType);
 
+    // SensorBlock: Check if a sensor type is subject to per-package sensor blocking
+    static bool isSensorInBlockedSet(int sensorType);
+    bool isPackageSensorBlocked(const String16& opPackageName);
+    void setBlockedSensorPackages(const std::vector<String16>& packages) ANDROID_API;
+
     virtual status_t shellCommand(int in, int out, int err, Vector<String16>& args);
 
 private:
@@ -709,6 +714,10 @@ private:
     // Stores the handle of the dynamic_meta sensor to send clean up event once
     // HAL crashes.
     std::optional<int> mDynamicMetaSensorHandle;
+
+    // SensorBlock: Set of blocked packages and mutex
+    mutable Mutex mBlockedPackagesLock;
+    std::unordered_set<String16> mBlockedPackages GUARDED_BY(mBlockedPackagesLock);
 };
 
 } // namespace android

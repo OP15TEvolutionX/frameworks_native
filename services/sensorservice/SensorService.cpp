@@ -2876,6 +2876,40 @@ bool SensorService::isRateCappedBasedOnPermission(const String16& opPackageName)
  * This needs to be kept in sync with the list defined on the Java side
  * in frameworks/base/core/java/android/hardware/SystemSensorManager.java
  */
+bool SensorService::isSensorInBlockedSet(int sensorType) {
+    return (sensorType == SENSOR_TYPE_ACCELEROMETER
+            || sensorType == SENSOR_TYPE_ACCELEROMETER_UNCALIBRATED
+            || sensorType == SENSOR_TYPE_GYROSCOPE
+            || sensorType == SENSOR_TYPE_GYROSCOPE_UNCALIBRATED
+            || sensorType == SENSOR_TYPE_MAGNETIC_FIELD
+            || sensorType == SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED
+            || sensorType == SENSOR_TYPE_ORIENTATION
+            || sensorType == SENSOR_TYPE_GRAVITY
+            || sensorType == SENSOR_TYPE_LINEAR_ACCELERATION
+            || sensorType == SENSOR_TYPE_ROTATION_VECTOR
+            || sensorType == SENSOR_TYPE_GAME_ROTATION_VECTOR
+            || sensorType == SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+}
+
+bool SensorService::isPackageSensorBlocked(const String16& opPackageName) {
+    if (opPackageName.size() == 0) {
+        return false;
+    }
+    Mutex::Autolock _l(mBlockedPackagesLock);
+    return mBlockedPackages.find(opPackageName) != mBlockedPackages.end();
+}
+
+void SensorService::setBlockedSensorPackages(const std::vector<String16>& packages) {
+    Mutex::Autolock _l(mBlockedPackagesLock);
+    mBlockedPackages.clear();
+    for (const auto& pkg : packages) {
+        if (pkg.size() > 0) {
+            mBlockedPackages.insert(pkg);
+        }
+    }
+    ALOGI("SensorBlock: Updated blocked packages list, total: %zu", mBlockedPackages.size());
+}
+
 bool SensorService::isSensorInCappedSet(int sensorType) {
     return (sensorType == SENSOR_TYPE_ACCELEROMETER
             || sensorType == SENSOR_TYPE_ACCELEROMETER_UNCALIBRATED
