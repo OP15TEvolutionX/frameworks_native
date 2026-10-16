@@ -182,6 +182,15 @@ int32_t SensorService::SensorDirectConnection::configureChannel(int handle, int 
         return PERMISSION_DENIED;
     }
 
+    // SensorBlock: block direct channel reporting for restricted sensor types
+    if (SensorService::isSensorInBlockedSet(s.getType())) {
+        if (mService->isPackageSensorBlocked(mOpPackageName)) {
+            ALOGI("SensorBlock: Blocking direct channel for sensor %d (%s) for package %s",
+                  s.getType(), s.getName().c_str(), String8(mOpPackageName).c_str());
+            return NO_ERROR;
+        }
+    }
+
     if (s.getHighestDirectReportRateLevel() == 0
             || rateLevel > s.getHighestDirectReportRateLevel()
             || !s.isDirectChannelTypeSupported(mMem.type)) {
