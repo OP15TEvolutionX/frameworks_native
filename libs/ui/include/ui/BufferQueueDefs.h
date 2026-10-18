@@ -25,7 +25,9 @@ namespace android {
 #ifdef NUM_BUFFER_SLOTS_OVERRIDE
         static constexpr int NUM_BUFFER_SLOTS = NUM_BUFFER_SLOTS_OVERRIDE;
 #else
-        static constexpr int NUM_BUFFER_SLOTS = 64;
+        // Oplus camera requests more than 64 buffer slots; the stock 64 causes a
+        // black viewfinder. Bumped to 96 (pure capacity headroom, low risk).
+        static constexpr int NUM_BUFFER_SLOTS = 96;
 #endif
 
         enum {
